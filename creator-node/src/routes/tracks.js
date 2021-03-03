@@ -583,6 +583,7 @@ module.exports = function (app) {
     req.params.CID = multihash
     req.params.streamable = true
     res.set('Content-Type', 'audio/mpeg')
+    res.set('Cache-Control', 'private')
     next()
   }, getCID)
 
