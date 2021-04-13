@@ -69,7 +69,7 @@ async function ensurePrimaryMiddleware (req, res, next) {
   try {
     serviceEndpoint = await getOwnEndpoint(req)
   } catch (e) {
-    return sendResponse(req, res, errorResponseServerError(e))
+    return sendResponse(req, res, errorResponseServerError(_parseErrorObj(e)))
   }
 
   let creatorNodeEndpoints
@@ -82,7 +82,7 @@ async function ensurePrimaryMiddleware (req, res, next) {
       myCnodeEndpoint: serviceEndpoint
     })
   } catch (e) {
-    return sendResponse(req, res, errorResponseServerError(e))
+    return sendResponse(req, res, errorResponseServerError(_parseErrorObj(e)))
   }
   const primary = creatorNodeEndpoints[0]
 
@@ -361,6 +361,10 @@ function _isFQDN (url) {
   if (config.get('creatorNodeIsDebug')) return true
   const FQDN = new RegExp(/(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)/gm)
   return FQDN.test(url)
+}
+
+function _parseErrorObj (error) {
+  return Object.getOwnPropertyNames(error).reduce((acc, cur) => { acc[cur] = error[cur]; return acc }, {})
 }
 
 module.exports = {
