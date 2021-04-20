@@ -3,17 +3,17 @@
     address=$(echo $eth_account | cut -d' ' -f1)
     priv_key=$(echo $eth_account | cut -d' ' -f2)
 
-    solana config set -u devnet
+    solana config set -u localhost
 
     solana-keygen new -s --no-bip39-passphrase
     solana-keygen new -s --no-bip39-passphrase -o feepayer.json
     solana-keygen new -s --no-bip39-passphrase -o owner.json
 
-    solana airdrop 1 feepayer.json
+    solana airdrop --faucet-host 127.0.0.1 1 feepayer.json
 
-    solana airdrop 1
-    solana airdrop 1
-    solana airdrop 1
+    solana airdrop --faucet-host 127.0.0.1 1
+    solana airdrop --faucet-host 127.0.0.1 1
+    solana airdrop --faucet-host 127.0.0.1 1
 
     cd program
     cargo build-bpf
@@ -26,9 +26,9 @@
     fi
     sed -i "s/$cur_address/$new_address/g" src/lib.rs
 
-    solana airdrop 1
-    solana airdrop 1
-    solana airdrop 1
+    solana airdrop --faucet-host 127.0.0.1 1
+    solana airdrop --faucet-host 127.0.0.1 1
+    solana airdrop --faucet-host 127.0.0.1 1
 
     cd ../create_and_verify
     cargo build-bpf
