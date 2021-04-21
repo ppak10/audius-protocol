@@ -189,7 +189,7 @@ jobs:
   test-libs:
     docker:
       # specify the version you desire here
-      - image: circleci/node:10.16
+      - image: circleci/node:14.16
       - image: trufflesuite/ganache-cli:latest
         # https://discuss.circleci.com/t/docker-using-local-image/11581/9
         # https://circleci.com/docs/2.0/configuration-reference/#docker
@@ -268,7 +268,7 @@ jobs:
 
   test-contracts:
     docker:
-      - image: circleci/node:10.16.3
+      - image: circleci/node:14.16
       - image: trufflesuite/ganache-cli:latest
         command: ['--port=8555', '-a', '100', '-l', '8000000']
     parameters:
@@ -309,7 +309,7 @@ jobs:
 
   test-eth-contracts:
     docker:
-      - image: circleci/node:10.16.3
+      - image: circleci/node:14.16
       - image: trufflesuite/ganache-cli:latest
         command: ['--port=8546', '-a', '50', '-l', '8000000']
     parameters:
@@ -358,7 +358,7 @@ jobs:
   test-content-service:
     docker:
       # specify the version you desire here
-      - image: circleci/node:10.16.3
+      - image: circleci/node:14.16
       - image: ipfs/go-ipfs:release
       - image: circleci/postgres:11.1
         environment:
@@ -399,7 +399,7 @@ jobs:
   test-creator-node:
     docker:
       # specify the version you desire here
-      - image: circleci/node:10.16.3
+      - image: circleci/node:14.16
       - image: ipfs/go-ipfs:release
       - image: circleci/postgres:11.1
         environment:
@@ -518,7 +518,7 @@ jobs:
   test-identity-service:
     docker:
       # specify the version you desire here
-      - image: circleci/node:10.16.3
+      - image: circleci/node:14.16
       - image: ipfs/go-ipfs:release
       - image: trufflesuite/ganache-cli:latest
         # https://discuss.circleci.com/t/docker-using-local-image/11581/9
