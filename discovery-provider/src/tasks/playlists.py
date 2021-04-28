@@ -208,6 +208,7 @@ def parse_playlist_event(
             logger.info(f"index.py | playlists.py | Ordering playlist intermediate_dict {intermediate_track_time_lookup_dict}")
 
             playlist_content_array = []
+            logger.info(f"index.py | playlists.py | Ordering playlist chain args {event_args._orderedTrackIds}")
             for track_id in event_args._orderedTrackIds:
                 track_time_array_length = len(intermediate_track_time_lookup_dict[track_id])
                 if track_time_array_length > 1:
