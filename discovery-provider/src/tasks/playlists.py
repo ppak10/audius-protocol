@@ -205,6 +205,7 @@ def parse_playlist_event(
                     intermediate_track_time_lookup_dict[track_id] = []
 
                 intermediate_track_time_lookup_dict[track_id].append(track_time)
+            logger.info(f"index.py | playlists.py | Ordering playlist intermediate_dict {intermediate_track_time_lookup_dict}")
 
             playlist_content_array = []
             for track_id in event_args._orderedTrackIds:
@@ -217,6 +218,7 @@ def parse_playlist_event(
                     track_time = block_integer_time
                 playlist_content_array.append({"track": track_id, "time": track_time})
 
+            logger.info(f"index.py | playlists.py | Ordering playlist updated array {playlist_content_array}")
             playlist_record.playlist_contents = {"track_ids": playlist_content_array}
 
     if event_type == playlist_event_types_lookup["playlist_name_updated"]:
