@@ -49,6 +49,7 @@ module.exports = function (app) {
     } catch (e) {
       req.logger.error(e)
       console.log(e)
+      // this should probably error errorResponserServerError
       return errorResponseBadRequest('Unable to create user event')
     }
   }))
