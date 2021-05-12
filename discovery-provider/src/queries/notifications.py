@@ -1,4 +1,6 @@
 import logging  # pylint: disable=C0302
+import functools as ft
+from datetime import date, timedelta
 from flask import Blueprint, request
 from sqlalchemy import desc
 
@@ -266,6 +268,7 @@ def notifications():
         notifications_unsorted.extend(follow_notifications)
 
         # Query relevant favorite information
+        # Favorite results are also used for playlist update notifications
         favorites_query = session.query(Save)
         favorites_query = favorites_query.filter(
             Save.is_current == True,
@@ -725,6 +728,57 @@ def notifications():
             owner = entry.owner_id
             track_id = entry.track_id
             owner_info[const.tracks][track_id] = owner
+
+        # Get playlist updates
+        today = date.today()
+        thirty_days_ago = today - timedelta(days=30)
+        playlist_update_query = session.query(Playlist)
+        playlist_update_query = playlist_update_query.filter(
+            Playlist.is_current == True,
+            Playlist.is_delete == False,
+            Playlist.blocknumber > min_block_number,
+            Playlist.blocknumber <= max_block_number)
+
+        playlist_update_results = playlist_update_query.all()
+
+        # Represents all playlist update notifications
+        playlist_update_notifications = []
+        playlist_update_notifs_by_playlist_id = {}
+        for entry in playlist_update_results:
+            if entry.updated_at < thirty_days_ago:
+                continue
+            playlist_update_notifs_by_playlist_id[entry.playlist_id] = {
+                const.notification_type:
+                const.notification_type_playlist_update,
+                const.notification_blocknumber: entry.blocknumber,
+                const.notification_timestamp: entry.created_at,
+                const.notification_initiator: entry.playlist_owner_id,
+                const.notification_metadata: {
+                    const.notification_entity_id: entry.playlist_id,
+                    const.notification_entity_type: 'playlist',
+                    const.notification_playlist_update_timestamp: entry.updated_at
+                }
+            }
+
+        users_that_favorited_playlists_dict = ft.reduce(
+            lambda accumulator, current: accumulator.update({
+                current.save_item_id: accumulator[current.save_item_id] + [current.user_id] \
+                    if current.save_item_id in accumulator else [current.user_id]
+            }) or accumulator,
+            filter(lambda result: result.save_type == SaveType.playlist, favorite_results)
+        )
+
+        for playlist_id in users_that_favorited_playlists_dict:
+            if playlist_id not in playlist_update_notifs_by_playlist_id:
+                continue
+            playlist_update_notif = playlist_update_notifs_by_playlist_id[playlist_id]
+            playlist_update_notif[const.notification_metadata].update({
+                const.notification_playlist_update_users: users_that_favorited_playlists_dict[playlist_id]
+            })
+            playlist_update_notifications.append(playlist_update_notif)
+
+        notifications_unsorted.extend(playlist_update_notifications)
+
 
     # Final sort - TODO: can we sort by timestamp?
     sorted_notifications = \
