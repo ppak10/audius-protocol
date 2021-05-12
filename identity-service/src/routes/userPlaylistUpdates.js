@@ -9,7 +9,7 @@ module.exports = function (app) {
    * Updates the lastPlaylistViews field for the user in the UserEvents table 
    * @param {string} walletAddress   user wallet address
    */
-  app.get('/playlist_updates', handleResponse(async (req) => {
+  app.get('/user_playlist_updates', handleResponse(async (req) => {
     const { walletAddress } = req.query
     if (!walletAddress) {
       return errorResponseBadRequest('Please provide a wallet address')
@@ -38,7 +38,7 @@ module.exports = function (app) {
    * @param {string} walletAddress            user wallet address
    * @param {boolean} playlistLibraryItemId   id of playlist or folder to update
    */
-  app.post('/playlist_updates', authMiddleware, handleResponse(async (req) => {
+  app.post('/user_playlist_updates', authMiddleware, handleResponse(async (req) => {
     const { walletAddress, playlistLibraryItemId } = req.query
     if (!walletAddress || !playlistLibraryItemId) {
       return errorResponseBadRequest(
@@ -54,15 +54,27 @@ module.exports = function (app) {
       })
       if (!userEvents) throw new Error(`UserEvents for ${walletAddress} not found`)
 
-      updatedPlaylistUpdates = {
-        ...userEvents.playlistUpdates,
-        [playlistLibraryItemId]: moment().utc().valueOf()
+      const now = moment().utc().valueOf()
+      let playlistUpdates = {}
+      if (!userEvents.playlistUpdates) {
+        playlistUpdates[playlistLibraryItemId] = {
+          lastUpdated: now,
+          userLastViewed: now
+        }
+      } else {
+        playlistUpdates = {
+          ...userEvents.playlistUpdates,
+          [playlistLibraryItemId]: {
+            lastUpdated: userEvents.playlistUpdates[playlistLibraryItemId]?.lastUpdated || now,
+            userLastViewed: now
+          }
+        }
       }
 
-      await models.UserEvents.upsert({
-        walletAddress,
-        updatedPlaylistUpdates
-      })
+      await models.UserEvents.update(
+        playlistUpdates,
+        { where: { walletAddress } }
+      )
       return successResponse({})
     } catch (e) {
       req.logger.error(e)

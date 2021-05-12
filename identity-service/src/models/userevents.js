@@ -4,6 +4,10 @@ module.exports = (sequelize, DataTypes) => {
     walletAddress: {
       type: DataTypes.STRING,
       primaryKey: true,
+      // should this be 'User' instead of 'Users'?
+      // couldn't find a match when I searched for 'models.Users.'
+      // and Users does not have a 'walletAddress' attribute
+      // and Users model is not defined
       references: { model: 'Users', key: 'walletAddress' }
     },
     needsRecoveryEmail: {
