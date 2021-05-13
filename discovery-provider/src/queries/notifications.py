@@ -1,6 +1,6 @@
 import logging  # pylint: disable=C0302
 import functools as ft
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from flask import Blueprint, request
 from sqlalchemy import desc
 
@@ -732,6 +732,14 @@ def notifications():
         # Get playlist updates
         today = date.today()
         thirty_days_ago = today - timedelta(days=30)
+        thirty_days_ago_time = datetime(
+            thirty_days_ago.year,
+            thirty_days_ago.month,
+            thirty_days_ago.day,
+            0,
+            0,
+            0
+        )
         playlist_update_query = session.query(Playlist)
         playlist_update_query = playlist_update_query.filter(
             Playlist.is_current == True,
@@ -745,7 +753,7 @@ def notifications():
         playlist_update_notifications = []
         playlist_update_notifs_by_playlist_id = {}
         for entry in playlist_update_results:
-            if entry.updated_at < thirty_days_ago:
+            if entry.updated_at < thirty_days_ago_time:
                 continue
             playlist_update_notifs_by_playlist_id[entry.playlist_id] = {
                 const.notification_type:
@@ -765,7 +773,8 @@ def notifications():
                 current.save_item_id: accumulator[current.save_item_id] + [current.user_id] \
                     if current.save_item_id in accumulator else [current.user_id]
             }) or accumulator,
-            filter(lambda result: result.save_type == SaveType.playlist, favorite_results)
+            filter(lambda result: result.save_type == SaveType.playlist, favorite_results),
+            {}
         )
 
         for playlist_id in users_that_favorited_playlists_dict:
@@ -793,7 +802,6 @@ def notifications():
             'owners': owner_info
         }
     )
-
 
 @bp.route("/milestones/followers", methods=("GET",))
 def milestones_followers():
